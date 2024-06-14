@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wondrobe</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="./style/home.css">
+</head>
+
+<body>
+    <nav class="top-nav">
+        <div class="logo">
+            <span class="icon"><img src="../img/isotype.png" alt="Isotype Picture"></span>
+            <span>Wondrobe</span>
+        </div>
+        <div class="user-info">
+            <img src="../img/profile_picture.png" alt="Profile Picture" class="profile-pic" id="profile-pic">
+            <div class="user-details">
+                <span class="user-name" id="user-name">User Name</span>
+                <span class="user-email" id="user-email">user@example.com</span>
+            </div>
+        </div>
+    </nav>
+    <div class="sidebar">
+        <div class="sidebar-item" id="dashboard">
+            <span class="icon"><i class="fa-solid fa-table-cells-large" style="color: #7eb66a;"></i></span>
+            <span>Dashboard</span>
+        </div>
+        <div class="sidebar-item" id="charts">
+            <span class="icon"><i class="fa-solid fa-chart-line" style="color: #ffffff;"></i></span>
+            <span>Charts</span>
+        </div>
+        <div class="sidebar-item" id="users">
+            <span class="icon"><i class="fa-solid fa-users" style="color: #ffffff;"></i></span>
+            <span>Users</span>
+        </div>
+        <div class="sidebar-item" id="logOut">
+            <span class="icon"><i class="fa-solid fa-arrow-right-from-bracket" style="color: #ffffff;"></i></span>
+            <span>Log Out</span>
+        </div>
+    </div>
+    <main class="main-content">
+        <div class="cards">
+            <div class="card" id="total-users">
+                <h3>Total Users</h3>
+                <p id="user-count">0</p>
+            </div>
+            <div class="card" id="total-posts">
+                <h3>Total Posts</h3>
+                <p id="post-count">0</p>
+            </div>
+            <div class="card" id="total-clothes">
+                <h3>Total Clothes</h3>
+                <p id="clothes-count">0</p>
+            </div>
+        </div>
+        <canvas id="activity-chart" width="400" height="200"></canvas>
+        <!--<div class="loading-overlay">
+            <div class="loader"></div>
+        </div>-->
+    </main>
+    <script type="module" src="./js/home.js"></script>
+    <script type="module" src="./js/firebase-config.js"></script>
+</body>
+
+</html>
