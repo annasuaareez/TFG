@@ -1,41 +1,21 @@
-import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter, where, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter, where, deleteDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
 import { firebaseConfig, auth } from './firebase-config.js';
-import { getAuth, deleteUser } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
 import { getStorage, ref, listAll, deleteObject } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const authInstance = getAuth(app);
 const storage = getStorage(app);
+const functions = getFunctions(app);
 
 const PAGE_SIZE = 10; 
 let currentPage = 1;
 let lastVisibleUser = null;
 
-$('.sidebar-item').click(function () {
-    $('.sidebar-item').removeClass('active');
-    $(this).addClass('active');
-});
-
-$('#dashboard').click(function () {
-    window.location.href = 'home.html';
-});
-
-$('#users').click(function () {
-    window.location.href = 'user.html';
-});
-
-$('#logOut').click(function () {
-    auth.signOut().then(function () {
-        window.location.href = 'index.html';
-    }).catch(function (error) {
-        console.error("Error signing out:", error);
-    });
-});
-
 $(document).ready(function () {
-    // Recuperar la información del usuario
     const userData = sessionStorage.getItem('userData');
     console.log("User data from sessionStorage:", userData);
 
@@ -49,7 +29,6 @@ $(document).ready(function () {
         console.error("No user data found in sessionStorage!");
     }
 
-    // Tabla
     const userTable = $('#user-table tbody');
     async function loadUsers(page) {
         const usersRef = collection(db, 'users');
@@ -71,7 +50,6 @@ $(document).ready(function () {
             const userName = userData.username || 'N/A';
             const email = userData.email || 'N/A';
 
-            // Agregar una fila a la tabla por cada usuario
             userTable.append(`
                 <tr data-username="${userName}">
                     <td>${index}</td>
@@ -84,17 +62,11 @@ $(document).ready(function () {
             index++;
         });
 
-        // Actualizar el último usuario visible
         lastVisibleUser = querySnapshot.docs[querySnapshot.docs.length - 1];
-
-        // Actualizar el número de página
         $('#currentPage').text(currentPage);
-
-        // Habilitar/deshabilitar botones de paginación
         $('#prevPage').prop('disabled', currentPage === 1);
         $('#nextPage').prop('disabled', querySnapshot.size < PAGE_SIZE);
 
-        // Añadir evento de clic al icono del ojo
         $('.eye-icon').click(function () {
             const username = $(this).closest('tr').data('username');
             showUserDetail(username);
@@ -147,7 +119,6 @@ $(document).ready(function () {
                 banUserProfile(uid);
             });
 
-            // Cargar los posts del usuario
             await loadUserPosts(uid);
         } else {
             console.error('No user found with username:', username);
@@ -215,18 +186,27 @@ $(document).ready(function () {
         }
     }
 
-    async function banUserProfile(uid, email) {
+    async function banUserProfile(uid) {
         try {
-            const userRecord = await authInstance.getUserByEmail(email);
-            
-            await authInstance.updateUser(userRecord.uid, { disabled: true });
-            
+            // Primero, desactivamos el usuario
+            await updateUserStatus(uid, { disabled: true });
+    
+            // Luego, eliminamos sus datos
             await deleteUserData(uid);
-            
+    
             alert('User has been banned and all related data has been deleted.');
             $('#backToList').click();
         } catch (error) {
             console.error('Error banning user:', error);
+        }
+    }
+
+    async function updateUserStatus(uid, status) {
+        try {
+            await setDoc(doc(db, 'users', uid), status, { merge: true });
+        } catch (error) {
+            console.error('Error updating user status:', error);
+            throw error;
         }
     }
 
@@ -261,12 +241,38 @@ $(document).ready(function () {
             await Promise.all(deletePromises);
 
             console.log('User data deleted:', uid);
-
-            console.log('User data deleted:', uid);
         } catch (error) {
             console.error('Error deleting user data:', error);
         }
     }
 
     loadUsers(currentPage);
+
+    function saveUserDataAndNavigate(url) {
+        const userData = {
+            firstName: $('#user-name').text(),
+            email: $('#user-email').text(),
+            profileImage: $('#profile-pic').attr('src')
+        };
+        sessionStorage.setItem('userData', JSON.stringify(userData));
+        window.location.href = url;
+    }
+
+    $('#dashboard').click(function () {
+        saveUserDataAndNavigate('home.html');
+    });
+
+    $('#users').click(function () {
+        saveUserDataAndNavigate('user.html');
+    });
+
+    $('#logOut').click(function () {
+        auth.signOut().then(function () {
+            sessionStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }).catch(function (error) {
+            console.error("Error signing out:", error);
+        });
+    });
+
 });

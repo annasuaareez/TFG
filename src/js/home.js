@@ -11,7 +11,7 @@ const db = getFirestore(app);
     $(this).addClass('active');
 });*/
 
-$('#dashboard').click(function () {
+/*$('#dashboard').click(function () {
     window.location.href = 'home.html';
 });
 
@@ -25,7 +25,7 @@ $('#logOut').click(function () {
     }).catch(function (error) {
         console.error("Error signing out:", error);
     });
-});
+});*/
 
 $(document).ready(function () {
     //const loaderContainer = $('.loading-overlay');
@@ -124,5 +124,32 @@ $(document).ready(function () {
             //hideLoader();
         }
     }
+
+    function saveUserDataAndNavigate(url) {
+        const userData = {
+            firstName: $('#user-name').text(),
+            email: $('#user-email').text(),
+            profileImage: $('#profile-pic').attr('src')
+        };
+        sessionStorage.setItem('userData', JSON.stringify(userData));
+        window.location.href = url;
+    }
+
+    $('#dashboard').click(function () {
+        saveUserDataAndNavigate('home.html');
+    });
+
+    $('#users').click(function () {
+        saveUserDataAndNavigate('user.html');
+    });
+
+    $('#logOut').click(function () {
+        auth.signOut().then(function () {
+            sessionStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }).catch(function (error) {
+            console.error("Error signing out:", error);
+        });
+    });
 
 });
